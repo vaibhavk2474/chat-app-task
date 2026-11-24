@@ -7,6 +7,7 @@ An API-only chat backend built with Node.js, TypeScript, Express, PostgreSQL, an
 - `POST /api/v1/chat/create` creates or returns the direct chat for two existing users.
 - `GET /api/v1/user/:userId/chats` lists a user's chats and member details.
 - `POST /api/v1/chat/:chatId/message/send` stores a message for a chat member and returns its Firestore message ID.
+- `GET /api/v1/chat/:chatId/messages` returns paginated messages from a chat, newest page first and chronological within each page.
 - PostgreSQL schema, migration, and sample-user seed scripts are present.
 - Firebase Admin initialization is configured. Read-receipt and last-seen APIs are not implemented yet.
 
@@ -83,9 +84,14 @@ Request:
 
 The sender must be a member of the chat. Text is trimmed, must contain at least one non-whitespace character, and can be at most 2,000 characters after trimming. A successful request returns HTTP 201 with `{ "messageId": "<Firestore document ID>" }`. The message document stores `senderId`, `text`, and a Firestore server timestamp in `createdAt`.
 
+#### Get messages
+
+`GET /api/v1/chat/:chatId/messages?limit=50&cursor=<messageId>`
+
+`limit` is optional, defaults to 50, and must be between 1 and 100. Omit `cursor` to fetch the newest page. To fetch older messages, pass the `nextCursor` returned by the previous page. The response is `{ "messages": [...], "nextCursor": "<messageId>" }`; `nextCursor` is `null` when there are no more older messages. Messages within each page are returned oldest to newest. This endpoint does not yet verify the requester is a chat member; requester identity/authentication is planned for a future change.
+
 ### Planned (not implemented)
 
-- `GET /api/v1/chat/:chatId/messages?limit=50` — verify membership and return messages ordered by timestamp.
 - `POST /api/v1/chat/:chatId/message/:messageId/read` — accept `userId` and write a read receipt in Firestore.
 - `POST /api/v1/chat/:chatId/lastseen` — accept `userId` and `messageId` and update that user's last-seen message in Firestore.
 

@@ -1,9 +1,10 @@
 import { AppError } from "../middleware/errors.js";
-import { createOrGetDirectChat, isChatMember } from "../repositories/chat.repository.js";
-import { createMessage } from "../repositories/message.repository.js";
+import { chatExists, createOrGetDirectChat, isChatMember } from "../repositories/chat.repository.js";
+import { createMessage, findMessageCursor, listMessages } from "../repositories/message.repository.js";
+import type { MessagePage } from "../repositories/message.repository.js";
 import { countExistingUsers } from "../repositories/user.repository.js";
 import type { CreateChatInput } from "../validators/chat.validator.js";
-import type { SendMessageInput } from "../validators/message.validator.js";
+import type { GetMessagesInput, SendMessageInput } from "../validators/message.validator.js";
 
 export async function createOrGetChat(input: CreateChatInput): Promise<string> {
     const existing = await countExistingUsers([input.userAId, input.userBId]);
@@ -23,4 +24,23 @@ export async function sendChatMessage(input: SendMessageInput): Promise<string> 
     }
 
     return createMessage(chatId, senderId, text);
+}
+
+export async function getChatMessages(input: GetMessagesInput): Promise<MessagePage> {
+    const { chatId } = input.params;
+    const { limit, cursor } = input.query;
+
+    if (!(await chatExists(chatId))) {
+        throw new AppError(404, "Chat not found");
+    }
+
+    const cursorSnapshot = cursor
+        ? await findMessageCursor(chatId, cursor)
+        : undefined;
+
+    if (cursor && !cursorSnapshot) {
+        throw new AppError(400, "Cursor message was not found in this chat");
+    }
+
+    return listMessages(chatId, limit, cursorSnapshot ?? undefined);
 }

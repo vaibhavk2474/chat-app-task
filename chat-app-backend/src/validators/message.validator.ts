@@ -13,3 +13,17 @@ export const sendMessageSchema = z.object({
 });
 
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+
+export const getMessagesSchema = z.object({
+    params: z.object({
+        chatId: z.uuid("Invalid chatId format"),
+    }),
+    query: z.object({
+        limit: z.coerce.number().int().min(1).max(100).default(50),
+        cursor: z.string().min(1).max(1500).refine((value) => !value.includes("/"), {
+            message: "Invalid cursor",
+        }).optional(),
+    }),
+});
+
+export type GetMessagesInput = z.infer<typeof getMessagesSchema>;

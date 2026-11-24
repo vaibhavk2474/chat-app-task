@@ -69,3 +69,12 @@ export async function isChatMember(chatId: string, userId: string): Promise<bool
 
     return result.rows[0]?.isMember ?? false;
 }
+
+export async function chatExists(chatId: string): Promise<boolean> {
+    const result = await pool.query<{ chatExists: boolean }>(
+        `SELECT EXISTS (SELECT 1 FROM chats WHERE id = $1) AS "chatExists"`,
+        [chatId]
+    );
+
+    return result.rows[0]?.chatExists ?? false;
+}
