@@ -2,6 +2,7 @@ import express from "express";
 import { chatRouter } from "./routes/chat.routes.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import catchAll from "./middleware/catch-all.js";
+import { userRouter } from "./routes/user.routes.js";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.get('/api/v1/health', (req, res) => {
 });
 
 app.use("/api/v1/chat", chatRouter);
+app.use("/api/v1/user", userRouter);
 
 
 // 404 catch-all: must come after all routes, before the error handler

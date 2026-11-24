@@ -56,3 +56,16 @@ export async function createOrGetDirectChat(
         client.release();
     }
 }
+
+export async function isChatMember(chatId: string, userId: string): Promise<boolean> {
+    const result = await pool.query<{ isMember: boolean }>(
+        `SELECT EXISTS (
+           SELECT 1
+           FROM chat_members
+           WHERE chat_id = $1 AND user_id = $2
+         ) AS "isMember"`,
+        [chatId, userId]
+    );
+
+    return result.rows[0]?.isMember ?? false;
+}
