@@ -1,6 +1,6 @@
 # Chat Backend
 
-An API-only chat backend built with Node.js, TypeScript, Express, PostgreSQL, and Firebase Firestore. It currently supports direct chats and is structured to support group chats. PostgreSQL stores users, chats, and chat membership. Firestore stores messages; read receipts and per-user last-seen state are planned.
+An API-only chat backend built with Node.js, TypeScript, Express, PostgreSQL, and Firebase Firestore. It currently supports direct chats and is structured to support group chats. PostgreSQL stores users, chats, and chat membership. Firestore stores messages, read receipts, and per-user last-seen state.
 
 ## Current implementation
 
@@ -8,8 +8,10 @@ An API-only chat backend built with Node.js, TypeScript, Express, PostgreSQL, an
 - `GET /api/v1/user/:userId/chats` lists a user's chats and member details.
 - `POST /api/v1/chat/:chatId/message/send` stores a message for a chat member and returns its Firestore message ID.
 - `GET /api/v1/chat/:chatId/messages` returns paginated messages from a chat, newest page first and chronological within each page.
+- `POST /api/v1/chat/:chatId/message/:messageId/read` records a chat member's read receipt in Firestore.
+- `POST /api/v1/chat/:chatId/lastseen` updates a member's last-seen message for the chat.
 - PostgreSQL schema, migration, and sample-user seed scripts are present.
-- Firebase Admin initialization is configured. Read-receipt and last-seen APIs are not implemented yet.
+- Firebase Admin stores message, read-receipt, and last-seen data.
 
 The remaining required endpoints are listed below as planned behavior, not implemented functionality.
 
@@ -90,10 +92,19 @@ The sender must be a member of the chat. Text is trimmed, must contain at least 
 
 `limit` is optional, defaults to 50, and must be between 1 and 100. Omit `cursor` to fetch the newest page. To fetch older messages, pass the `nextCursor` returned by the previous page. The response is `{ "messages": [...], "nextCursor": "<messageId>" }`; `nextCursor` is `null` when there are no more older messages. Messages within each page are returned oldest to newest. This endpoint does not yet verify the requester is a chat member; requester identity/authentication is planned for a future change.
 
-### Planned (not implemented)
+#### Mark a message as read
 
-- `POST /api/v1/chat/:chatId/message/:messageId/read` — accept `userId` and write a read receipt in Firestore.
-- `POST /api/v1/chat/:chatId/lastseen` — accept `userId` and `messageId` and update that user's last-seen message in Firestore.
+`POST /api/v1/chat/:chatId/message/:messageId/read`
+
+Request body: `{ "userId": "<user UUID>" }`. The user must be a chat member, the message must exist, and users cannot mark their own messages as read. The API creates one receipt at `chats/{chatId}/messages/{messageId}/receipts/{userId}` with a Firestore server timestamp. Repeating the request keeps the original read time. Success returns `{ "messageId": "...", "userId": "...", "read": true }`.
+
+#### Update last seen
+
+`POST /api/v1/chat/:chatId/lastseen`
+
+Request body: `{ "userId": "<user UUID>", "messageId": "<Firestore message ID>" }`. The user must be a chat member and the message must exist in that chat. The Firestore document at `chats/{chatId}/members/{userId}` stores `lastSeenMessageId`, `lastSeenMessageCreatedAt`, and `updatedAt`. The marker only moves forward; an older or duplicate update succeeds without changing the stored marker. Success returns `{ "userId": "...", "lastSeenMessageId": "...", "updated": true }` (`updated` is false when the existing marker is already newer).
+
+### Planned (not implemented)
 
 The task's optional group management and message edit/delete features are not implemented.
 
