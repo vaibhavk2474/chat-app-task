@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { createChatSchema } from "../validators/chat.validator.js";
-import { createOrGetChat, editChatMessage, getChatMessages, markChatMessageRead, sendChatMessage, updateChatLastSeen } from "../services/chat.service.js";
-import { editMessageSchema, getMessagesSchema, markMessageReadSchema, sendMessageSchema, updateLastSeenSchema } from "../validators/message.validator.js";
+import { createOrGetChat, deleteChatMessage, editChatMessage, getChatMessages, markChatMessageRead, sendChatMessage, updateChatLastSeen } from "../services/chat.service.js";
+import { deleteMessageSchema, editMessageSchema, getMessagesSchema, markMessageReadSchema, sendMessageSchema, updateLastSeenSchema } from "../validators/message.validator.js";
 
 // does three things: validate the request body, call the service, send the response. 
 // Any error goes to next(err), 
@@ -103,6 +103,24 @@ export async function editMessage(
             body: req.body,
         });
         const messageId = await editChatMessage(input);
+        res.status(201).json({ messageId });
+    } catch (err) {
+        // zod will throw a ZodError if validation fails, 
+        // which will be caught by the error handler
+        next(err);
+    }
+}
+export async function deleteMessage(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> {
+    try {
+        const input = deleteMessageSchema.parse({
+            params: req.params,
+            body: req.body,
+        });
+        const messageId = await deleteChatMessage(input);
         res.status(201).json({ messageId });
     } catch (err) {
         // zod will throw a ZodError if validation fails, 

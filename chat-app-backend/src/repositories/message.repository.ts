@@ -208,3 +208,23 @@ export async function updateMessage(
     return messageRef.id;
 }
 
+export async function deleteMessage(
+    chatId: string,
+    messageId: string,
+    senderId: string
+): Promise<string> {
+    const messageRef = db.collection("chats").doc(chatId).collection("messages").doc(messageId);
+
+    const snap = await messageRef.get();
+    if (!snap.exists) {
+        throw new AppError(404, "Message not found");
+    }
+
+    if (snap.get("senderId") !== senderId) {
+        throw new AppError(403, "Unauthorized: you can only delete your own messages");
+    }
+
+    await messageRef.delete();
+
+    return messageRef.id;
+}

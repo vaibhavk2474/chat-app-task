@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createChat, editMessage, getMessages, markMessageReadController, sendMessage, updateLastSeenController } from "../controllers/chat.controller.js";
+import { createChat, deleteMessage, editMessage, getMessages, markMessageReadController, sendMessage, updateLastSeenController } from "../controllers/chat.controller.js";
 
 export const chatRouter = Router();
 
@@ -11,3 +11,4 @@ chatRouter.post("/:chatId/lastseen", updateLastSeenController);
 
 // Additional
 chatRouter.patch("/:chatId/message/:messageId", editMessage);
+chatRouter.delete("/:chatId/message/:messageId", deleteMessage);

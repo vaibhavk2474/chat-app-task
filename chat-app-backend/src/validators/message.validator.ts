@@ -72,3 +72,18 @@ export const editMessageSchema = z.object({
 });
 
 export type EditMessageInput = z.infer<typeof editMessageSchema>;
+
+
+export const deleteMessageSchema = z.object({
+    params: z.object({
+        chatId: z.uuid("Invalid chatId format"),
+        messageId: z.string().min(1).max(1500).refine((value) => !value.includes("/"), {
+            message: "Invalid messageId",
+        }),
+    }),
+    body: z.object({
+        senderId: z.uuid("Invalid senderId format"),
+    }),
+});
+
+export type DeleteMessageInput = z.infer<typeof deleteMessageSchema>;
