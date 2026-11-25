@@ -35,12 +35,12 @@ The server defaults to port `3000`. Check `GET http://localhost:3000/api/v1/heal
 
 ### Environment variables
 
-| Variable | Purpose |
-| --- | --- |
-| `PORT` | HTTP port; defaults to `3000`. |
-| `DATABASE_URL` | PostgreSQL connection string. |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Local path to the Firebase service account JSON file. |
-| `FIREBASE_SERVICE_ACCOUNT` | Optional service-account JSON string, suitable for deployment configuration. |
+| Variable                         | Purpose                                                                      |
+| -------------------------------- | ---------------------------------------------------------------------------- |
+| `PORT`                           | HTTP port; defaults to `3000`.                                               |
+| `DATABASE_URL`                   | PostgreSQL connection string.                                                |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Local path to the Firebase service account JSON file.                        |
+| `FIREBASE_SERVICE_ACCOUNT`       | Optional service-account JSON string, suitable for deployment configuration. |
 
 Use either Firebase credential option. Keep secrets in `.env` or your hosting provider's secret manager; do not commit credentials.
 
@@ -50,6 +50,8 @@ All current routes use the `/api/v1` prefix. IDs for users and chats are Postgre
 
 ### Implemented
 
+**Note:** Added postman-apis.md file from postman export to check all apis with proper method, url, params, query, body and response. please look over to it also.
+
 #### Create or get a direct chat
 
 `POST /api/v1/chat/create`
@@ -58,8 +60,8 @@ Request:
 
 ```json
 {
-  "userAId": "<user UUID>",
-  "userBId": "<user UUID>"
+	"userAId": "<user UUID>",
+	"userBId": "<user UUID>"
 }
 ```
 
@@ -79,8 +81,8 @@ Request:
 
 ```json
 {
-  "senderId": "<user UUID>",
-  "text": "Hello"
+	"senderId": "<user UUID>",
+	"text": "Hello"
 }
 ```
 
